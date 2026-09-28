@@ -2,8 +2,8 @@ import { WebSocket, WebSocketServer } from 'ws';
 
 import type Context from '@/context';
 
-export default ({ models: { Document } }: Context) => (wss: WebSocketServer, clients: WeakMap<WebSocket, string>): WebSocketServer => {
-    const models = [Document];
+export default ({ models: { Document, Folder } }: Context) => (wss: WebSocketServer, clients: WeakMap<WebSocket, string>): WebSocketServer => {
+    const models = [Document, Folder];
     const pipeline = [{
         $match: {
             $or: [
@@ -24,11 +24,12 @@ export default ({ models: { Document } }: Context) => (wss: WebSocketServer, cli
         const changeStream = model.watch(pipeline, options); 
 
         changeStream.on('change', event => {
+            const data = event.fullDocument;
             const payload = JSON.stringify({
                 model: model.modelName,
                 action: event.operationType,
                 documentId: event.documentKey._id,
-                data: event.fullDocument
+                data
             });
 
             wss.clients.forEach(client => {
@@ -36,8 +37,11 @@ export default ({ models: { Document } }: Context) => (wss: WebSocketServer, cli
 
                 if (
                     client.readyState === WebSocket.OPEN &&
-                    (event.fullDocument.userId === userId ||
-                    event.fullDocument.userIds?.includes(userId))
+                    (
+                        event.operationType === 'delete' ||
+                        data?.userId === userId ||
+                        data?.userIds?.includes(userId)
+                    )
                 ) { 
                     client.send(payload);
                 }

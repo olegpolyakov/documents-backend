@@ -2,17 +2,14 @@ import { Router } from 'express';
 
 import type { Context } from '@/context';
 
-import Controller from './controller';
+import documents from './documents';
+import folders from './folders';
 
 export default (context: Context) => {
     const router = Router();
-    const { getDocuments, getDocument, createDocument, updateDocument, deleteDocument } = Controller(context);
 
-    router.get('/documents', getDocuments);
-    router.get('/documents/:id', getDocument);
-    router.post('/documents', createDocument);
-    router.put('/documents/:id', updateDocument);
-    router.delete('/documents/:id', deleteDocument);
+    router.use('/documents', documents(context));
+    router.use('/folders', folders(context));
 
     return router;
 };

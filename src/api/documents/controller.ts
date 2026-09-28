@@ -10,7 +10,7 @@ export default ({ models: { Document } }: Context) => ({
 
         res.status(200).json(documents);
     },
-    
+
     async getDocument(req: Request, res: Response) {
         const userId = getUserId(req);
         const document = await Document.get({ _id: req.params.id, userId });
