@@ -5,7 +5,15 @@ import type Context from '@/context';
 export default ({ models: { Document } }: Context) => (wss: WebSocketServer, clients: WeakMap<WebSocket, string>): WebSocketServer => {
     const models = [Document];
     const pipeline = [{
-        $match: { operationType: { $in: ['insert', 'update', 'delete'] } }
+        $match: {
+            $or: [
+                { operationType: { $in: ['insert', 'delete'] } },
+                {
+                    operationType: 'update',
+                    'updateDescription.updatedFields.content': { $exists: false }
+                }
+            ]
+        }
     }];
     const options = {
         fullDocument: 'updateLookup', // ensures the full document is returned on updates

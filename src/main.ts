@@ -6,6 +6,7 @@ import Api from './api';
 import type Context from './context';
 import Db from './db';
 import DbChanges from './db/changes';
+import Yjs from './yjs/server';
 
 const {
     DOMAIN = '',
@@ -53,6 +54,7 @@ Server({
     .use(auth({ jwtSecret: JWT_SECRET }))
     .use('/api', Api(context))
     .plugin(Ws({ path: '/ws' }, [DbChanges(context)]))
+    .plugin(Yjs(context, { jwtSecret: JWT_SECRET }))
     .start(() => {
         console.info(`Server is running on ${HOST}:${PORT}`);
     });
